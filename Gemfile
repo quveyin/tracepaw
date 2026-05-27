@@ -69,4 +69,4 @@ gem "geocoder", "~> 1.8"
 
 gem "pgvector", "~> 0.3.3"
 
-gem "neighbor", "~> 1.0"
+gem "neighbor", "~> 1.1"
