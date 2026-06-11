@@ -1,0 +1,28 @@
+<h2>Müjde, <%= @pet.name %>!</h2>
+
+<p>
+  Kayıp dostunuza çok benzeyen bir hayvan
+  <strong><%= [@sighting.city, @sighting.district, @sighting.neighborhood].compact.reject(&:blank?).join(", ") %></strong>
+  konumunda görülmüştür!
+</p>
+
+<p>
+  <strong>İhbar Detayları:</strong>
+</p>
+<ul>
+  <li><strong>Açıklama:</strong> <%= @sighting.description %></li>
+  <li><strong>Tarih/Saat:</strong> <%= @sighting.seen_at&.strftime("%d %B %Y, %H:%M") %></li>
+  <li><strong>Konum Detayı:</strong> <%= @sighting.neighborhood %></li>
+</ul>
+
+<p>
+  <%= link_to "İhbarı Detaylı İncele", sighting_url(@sighting) %>
+</p>
+
+<p>
+  Hızlı davran ve sonuçları kontrol et!
+</p>
+
+<p>
+  <em>— TracePaw Topluluğu</em>
+</p>

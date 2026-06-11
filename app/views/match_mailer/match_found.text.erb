@@ -1,0 +1,13 @@
+Müjde, <%= @pet.name %>!
+
+Kayıp dostunuza çok benzeyen bir hayvan <%= [@sighting.city, @sighting.district, @sighting.neighborhood].compact.reject(&:blank?).join(", ") %> konumunda görülmüştür!
+
+İHBAR DETAYLARı:
+
+Açıklama: <%= @sighting.description %>
+Tarih/Saat: <%= @sighting.seen_at&.strftime("%d %B %Y, %H:%M") %>
+Konum: <%= @sighting.neighborhood %>
+
+Hemen kontrol et ve sonuçları gör!
+
+— TracePaw Topluluğu

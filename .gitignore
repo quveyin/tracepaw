@@ -36,3 +36,7 @@ __pycache__/
 test_*.jpg
 test_*.jpeg
 juri_icin_isaretli_*.jpg
+.venv/
+yolov8n.pt
+.venv/
+yolov8n.pt

@@ -1,103 +1,135 @@
 import sys
-import requests
+import json
 import cv2
 import torch
-import torch.nn as nn
-from torchvision import models, transforms
-from PIL import Image
-from ultralytics import YOLO
-from datetime import datetime
+import warnings
+import os
+import contextlib
 
-# Dışarıdan dosya yolu gelmezse uyar
-if len(sys.argv) < 2:
-    print("Hata: Lütfen analiz edilecek fotoğrafın yolunu belirtin.")
-    sys.exit()
+# Sistem ve PyTorch seviyesindeki gereksiz logları engelle
+warnings.filterwarnings("ignore")
+os.environ["HF_HUB_DISABLE_SYSLOG_WARNING"] = "1"
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
-fotograf_yolu = sys.argv[1]
-
-print("1. YOLO Modeli yükleniyor (Sadece Kırpma İçin)...")
-yolo_model = YOLO("yolov8n.pt") 
-
-print("2. ResNet-50 Biyometrik Model Yükleniyor...")
-# Literatürdeki en güçlü omurgalardan biri olan ResNet-50'yi yüklüyoruz
-resnet_model = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V2)
-
-# MÜHENDİSLİK HAMLESİ: Sınıflandırma (1000 tür) yerine Biyometrik Vektör istiyoruz.
-# ResNet50 normalde 2048 sayı üretir. Rails veritabanımız (pgvector) ise 512 sayı bekliyor.
-# Bu yüzden modelin son katmanını 2048'den 512'ye indirecek şekilde güncelliyoruz.
-num_ftrs = resnet_model.fc.in_features
-resnet_model.fc = nn.Linear(num_ftrs, 512)
-resnet_model.eval() # Modeli 'Eğitim' modundan 'Test/Çıkarım' moduna alıyoruz
-
-# Makalelerde geçen standart ResNet ön işleme (Pre-processing) adımları
-preprocess = transforms.Compose([
-    transforms.Resize(256),
-    transforms.CenterCrop(224),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-])
-
-orjinal_resim_cv2 = cv2.imread(fotograf_yolu)
-if orjinal_resim_cv2 is None:
-    print(f"Hata: {fotograf_yolu} bulunamadı!")
-    sys.exit()
-
-print(f"\n{fotograf_yolu} analiz ediliyor...")
-sonuclar = yolo_model(fotograf_yolu)
-sonuc = sonuclar[0]
-
-bulunanlar = []
-
-for kutu in sonuc.boxes:
-    sinif_id = int(kutu.cls[0])
-    tur_ismi = yolo_model.names[sinif_id]
-    guven = float(kutu.conf[0]) * 100
-    
-    if tur_ismi in ["dog", "cat"] and guven > 60:
-        # 1. YOLO ile hayvanı kırp
-        x1, y1, x2, y2 = map(int, kutu.xyxy[0])
-        kirpilmis_resim = orjinal_resim_cv2[y1:y2, x1:x2]
-        
-        # 2. Resmi ResNet-50'nin anlayacağı formata (Tensör) çevir
-        pil_resim = Image.fromarray(cv2.cvtColor(kirpilmis_resim, cv2.COLOR_BGR2RGB))
-        girdi_tensor = preprocess(pil_resim).unsqueeze(0)
-        
-        # 3. ResNet-50 ile Biyometrik Vektörü (512 boyut) çıkar
-        with torch.no_grad():
-            vektor_cikti = resnet_model(girdi_tensor)
-            biyometrik_yuz_izi = vektor_cikti[0].tolist()
-        
-        bulunanlar.append({
-            "tur": "Köpek" if tur_ismi == "dog" else "Kedi",
-            "guven_orani": round(guven, 2),
-            "vektor": biyometrik_yuz_izi
-        })
-
-print("\n--- ANALİZ SONUCU ---")
-if len(bulunanlar) > 0:
-    hedef_veri = bulunanlar[0]
-    print(f"Tespit: {hedef_veri['tur']} | Güven: %{hedef_veri['guven_orani']}")
-    
-    # === RAILS BACKEND'E GÖNDERME KISMI ===
-    print("Rails API'sine ResNet-50 Biyometrik Vektörü fırlatılıyor...")
-    
-    rails_paketi = {
-        "sighting": {
-            "latitude": 41.2867,
-            "longitude": 36.3300,
-            "description": f"ResNet-50 Biyometrik Analiz: {hedef_veri['tur']}",
-            "seen_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "face_embedding": hedef_veri['vektor']
-        }
-    }
-    
-    url = "http://localhost:3000/sightings"
-    
+@contextlib.contextmanager
+def silence_stdout():
+    new_target = open(os.devnull, "w")
+    old_stdout = sys.stdout
+    sys.stdout = new_target
     try:
-        cevap = requests.post(url, json=rails_paketi)
-        if cevap.status_code in [200, 201]:
-            print("Başarılı! ResNet-50 vektörü Rails (pgvector) kasasına yazıldı. 🚀")
-        else:
-            print(f"Hata! Rails reddetti. Durum kodu: {cevap.status_code}")
+        yield
+    finally:
+        sys.stdout = old_stdout
+        new_target.close()
+
+from PIL import Image
+
+with silence_stdout():
+    from ultralytics import YOLO
+    from transformers import CLIPProcessor, CLIPModel, logging as hf_logging
+    hf_logging.set_verbosity_error()
+
+def main():
+    if len(sys.argv) < 2:
+        print(json.dumps({"status": "error", "message": "Image path not provided"}))
+        sys.exit(1)
+
+    image_path = sys.argv[1]
+
+    yolo_model = YOLO("yolov8n.pt")
+    model_id = "openai/clip-vit-base-patch32"
+    processor = CLIPProcessor.from_pretrained(model_id)
+    model = CLIPModel.from_pretrained(model_id)
+    model.eval()
+
+    original_image = cv2.imread(image_path)
+    if original_image is None:
+        print(json.dumps({"status": "error", "message": f"Image not found at {image_path}"}))
+        sys.exit(1)
+
+    results = yolo_model(image_path, verbose=False)
+    result = results[0]
+
+    detections = []
+ 
+    color_labels = [
+        "orange or ginger fur",          # Turuncu / Sarman
+        "grey or silver fur",            # Gri / Duman rengi
+        "solid black fur",               # Tamamen siyah
+        "solid white fur",               # Tamamen beyaz
+        "brown or chocolate fur",        # Kahverengi
+        "golden or yellow fur",          # Golden / Sarı (Köpekler için)
+        "black and tan bicolor fur",     # Siyah-Taba (Alman Kurdu, Rottweiler)
+        "tabby pattern with stripes",    # Tekir desenli (Çizgili) - İŞTE O GRİ KEDİNİN KURTULACAĞI YER!
+        "bicolor or tuxedo pattern",     # İki renkli / Smokin (Göğsü beyaz, üstü başka renk)
+        "calico or tortoiseshell fur"    # Üç renkli (Calico / Tortie)
+    ]
+    color_mapping = [
+        "orange", "grey", "black", "white", "brown", "golden", 
+        "black_and_tan", "tabby", "bicolor", "calico"
+    ]
+
+    for box in result.boxes:
+        class_id = int(box.cls[0])
+        class_name = yolo_model.names[class_id]
+        confidence = float(box.conf[0]) * 100
+        
+        # CASUS LOG: YOLO'nun gördüğü her şeyi Rails terminalinde görebilmek için stderr'e yazıyoruz
+        print(f"[YOLO CASUS LOG] Sınıf: {class_name} | Güven Skoru: %{confidence:.2f}", file=sys.stderr)
+        
+        # BILIMSEL DÜZELTME: Güven barajını %60'tan %40'a düşürerek zorlu pozları yakalıyoruz
+        if class_name in ["dog", "cat"] and confidence > 40:
+            x1, y1, x2, y2 = map(int, box.xyxy[0])
+            cropped_image = original_image[y1:y2, x1:x2]
+            
+            if cropped_image.size == 0:
+                continue
+
+            pil_image = Image.fromarray(cv2.cvtColor(cropped_image, cv2.COLOR_BGR2RGB))
+            inputs = processor(text=color_labels, images=pil_image, return_tensors="pt", padding=True)
+            
+            with silence_stdout():
+                with torch.no_grad():
+                    outputs = model(**inputs)
+                    
+                    image_features = outputs.image_embeds
+                    image_features = image_features / image_features.norm(p=2, dim=-1, keepdim=True)
+                    face_embedding = image_features[0].tolist()
+                    
+                    logits_per_image = outputs.logits_per_image
+                    probs = logits_per_image.softmax(dim=-1)
+                    scores = probs[0].tolist()
+                    detected_color = color_mapping[probs.argmax().item()]
+            
+            detections.append({
+                "type": "Dog" if class_name == "dog" else "Cat",
+                "confidence": round(confidence, 2),
+                "embedding": face_embedding,
+                "color": detected_color,
+                "color_scores": {k: v for k, v in zip(color_mapping, scores)}
+            })
+
+    if not detections:
+        print(json.dumps({"status": "error", "message": "No dogs or cats detected"}))
+        sys.exit(1)
+
+    top = detections[0]
+    out = {
+        "status": "success",
+        "type": top["type"],
+        "tur": top["type"],
+        "confidence": top["confidence"],
+        "guven": top["confidence"],
+        "face_embedding": top["embedding"],
+        "renk": top["color"],
+        "fur_color": top["color"],
+        "fur_color_scores": top["color_scores"]
+    }
+    print(json.dumps(out))
+
+if __name__ == "__main__":
+    try:
+        main()
     except Exception as e:
-        print(f"Sunucuya ulaşılamadı. Hata: {e}")
+        print(json.dumps({"status": "error", "message": f"Unhandled error: {str(e)}"}))
+        sys.exit(1)

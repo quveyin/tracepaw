@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_26_113608) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_10_104325) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "vector"
@@ -44,30 +44,57 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_26_113608) do
   end
 
   create_table "pets", force: :cascade do |t|
+    t.integer "age"
     t.string "breed"
+    t.string "city"
     t.datetime "created_at", null: false
+    t.string "district"
     t.vector "face_embedding"
+    t.string "fur_color"
     t.float "latitude"
     t.float "longitude"
     t.string "name"
+    t.string "neighborhood"
     t.string "species"
     t.string "status"
     t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_pets_on_user_id"
   end
 
   create_table "sightings", force: :cascade do |t|
+    t.string "city"
     t.datetime "created_at", null: false
     t.text "description"
+    t.string "district"
     t.vector "face_embedding"
+    t.string "fur_color"
     t.float "latitude"
     t.float "longitude"
+    t.string "neighborhood"
     t.bigint "pet_id"
     t.datetime "seen_at"
+    t.string "species"
     t.datetime "updated_at", null: false
     t.index ["pet_id"], name: "index_sightings_on_pet_id"
   end
 
+  create_table "users", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "email", default: "", null: false
+    t.string "encrypted_password", default: "", null: false
+    t.string "first_name"
+    t.string "last_name"
+    t.datetime "remember_created_at"
+    t.datetime "reset_password_sent_at"
+    t.string "reset_password_token"
+    t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+  end
+
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "pets", "users"
   add_foreign_key "sightings", "pets"
 end

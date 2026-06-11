@@ -2,81 +2,167 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <style>
-  /* Petco Love Tarzı Modern Stil Ayarları */
-  body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background-color: #f4f6f8; }
-  .hero-section { background-color: #2c3e50; color: white; padding: 60px 20px; text-align: center; }
-  .hero-title { font-size: 3rem; margin-bottom: 10px; font-weight: 800; }
-  .hero-subtitle { font-size: 1.2rem; font-weight: 300; margin-bottom: 40px; color: #bdc3c7; }
-  
-  .search-box { 
-    background: white; max-width: 600px; margin: -30px auto 40px; padding: 30px; 
-    border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center;
-    position: relative; z-index: 10;
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    background-color: #f4f6f8;
+    color: #2c3e50;
   }
-  .upload-btn {
-    background-color: #e74c3c; color: white; border: none; padding: 15px 30px; 
-    font-size: 1.1rem; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s;
-  }
-  .upload-btn:hover { background-color: #c0392b; }
 
-  .map-container { max-width: 1200px; margin: 0 auto 50px; padding: 0 20px; }
-  .map-title { color: #2c3e50; font-size: 2rem; text-align: center; margin-bottom: 20px; }
-  #turkeyMap { height: 600px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); border: 2px solid #ecf0f1; }
+  .landing-hero {
+    background: linear-gradient(135deg, #2b3a67 0%, #1f253f 100%);
+    color: white;
+    padding: 80px 20px;
+    text-align: center;
+  }
+
+  .landing-hero h1 {
+    font-size: clamp(3rem, 5vw, 4.5rem);
+    margin: 0;
+    line-height: 1.05;
+  }
+
+  .landing-hero p {
+    font-size: 1.2rem;
+    max-width: 760px;
+    margin: 24px auto 0;
+    color: #dfe4ea;
+  }
+
+  .cta-group {
+    margin-top: 40px;
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .cta-button,
+  .secondary-button,
+  .tertiary-button {
+    border: none;
+    border-radius: 999px;
+    padding: 16px 32px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 700;
+    transition: transform 0.2s ease, background-color 0.2s ease;
+    text-decoration: none;
+    color: white;
+  }
+
+  .cta-button { background-color: #ff5a5f; }
+  .cta-button:hover { transform: translateY(-2px); background-color: #e04f54; }
+
+  .secondary-button { background-color: rgba(255,255,255,0.18); }
+  .secondary-button:hover { transform: translateY(-2px); background-color: rgba(255,255,255,0.28); }
+
+  .tertiary-button { background-color: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255,255,255,0.3); }
+  .tertiary-button:hover { transform: translateY(-2px); background-color: rgba(255, 255, 255, 0.18); }
+
+  .features {
+    max-width: 1100px;
+    margin: 60px auto;
+    display: grid;
+    gap: 24px;
+    padding: 0 20px;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+
+  .feature-card {
+    background: white;
+    border-radius: 24px;
+    padding: 32px;
+    box-shadow: 0 18px 60px rgba(23, 33, 70, 0.08);
+    min-height: 220px;
+  }
+
+  .feature-card h3 {
+    margin-top: 0;
+    color: #1f3254;
+  }
+
+  .feature-card p {
+    color: #556e85;
+    line-height: 1.8;
+  }
+
+  .map-panel {
+    max-width: 1200px;
+    margin: 0 auto 60px;
+    padding: 0 20px;
+  }
+
+  .map-panel h2 {
+    margin-bottom: 24px;
+    text-align: center;
+    font-size: 2rem;
+  }
+
+  #turkeyMap {
+    height: 520px;
+    border-radius: 24px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 18px 50px rgba(23, 33, 70, 0.08);
+  }
 </style>
 
-<div class="hero-section">
-  <h1 class="hero-title">🐾 TracePaw</h1>
-  <p class="hero-subtitle">Yapay Zeka Destekli Biyometrik Yüz Tanıma ile Kayıp Dostunuzu Bulun</p>
-</div>
+<section class="landing-hero">
+  <h1>TracePaw ile kayıp dostunuzu daha hızlı bulun</h1>
+  <p>Yapay zeka destekli biyometrik yüz tanıma teknolojisi, fotoğraf tabanlı eşleştirme ve konumlu ilan yönetimiyle kaybolan evcil hayvanların bulunmasına yardımcı olur.</p>
+  <div class="cta-group">
+    <%= link_to "Hemen Kayıt Ol", new_user_registration_path, class: "cta-button" %>
+    <%= link_to "İlan Oluştur", new_pet_path, class: "secondary-button" %>
+    <%= link_to "Sokakta Gördüm", new_sighting_path, class: "tertiary-button" %>
+  </div>
+</section>
 
-<div class="search-box">
-  <h2 style="color: #34495e; margin-top: 0;">Fotoğraf ile Ara</h2>
-  <p style="color: #7f8c8d; margin-bottom: 20px;">Kayıp hayvanınızın veya bulduğunuz hayvanın net bir yüz fotoğrafını yükleyin.</p>
-  
-  <form id="searchForm" enctype="multipart/form-data">
-    <input type="file" id="petImage" name="pet_image" accept="image/*" style="margin-bottom: 20px; font-size: 1rem; width: 100%;">
-    <button type="submit" class="upload-btn">Yüz İzi ile Tarama Yap 🧬</button>
-  </form>
-</div>
+<section class="features">
+  <div class="feature-card">
+    <h3>Akıllı Yüz Tanıma</h3>
+    <p>Fotoğrafı yükleyin ve kayıp hayvanınızın daha önceki ilanlarla eşleşmesini sağlayın. Yapay zeka, biyometrik yüz desenlerini inceler.</p>
+  </div>
+  <div class="feature-card">
+    <h3>Hızlı İlan Yönetimi</h3>
+    <p>Kayıp ilanınızı tek bir yerden oluşturun, güncelleyin ve çoklu fotoğraflarla kaybolan dostunuzun izini sürün.</p>
+  </div>
+  <div class="feature-card">
+    <h3>İl, İlçe, Mahalle Bazlı Arama</h3>
+    <p>Şehir bazlı filtrelerle ilanınızı hedefleyin. Harita üzerinde hızlıca nerelerde kayıp duyurusu yapıldığını görün.</p>
+  </div>
+</section>
 
-<div class="map-container">
-  <h2 class="map-title">Türkiye Genelindeki Kayıp İlanları</h2>
+<section class="map-panel">
+  <h2>Türkiye Genelindeki Kayıp İlanlar</h2>
   <div id="turkeyMap"></div>
-</div>
+</section>
 
 <script>
   document.addEventListener("DOMContentLoaded", function() {
-    // Haritayı Türkiye merkezine (Enlem: 39.0, Boylam: 35.0) ve uygun yakınlaştırmaya (zoom: 6) ayarlıyoruz.
     var map = L.map('turkeyMap', {
       center: [39.0, 35.0],
       zoom: 6,
-      minZoom: 5, // Türkiye'den çok uzaklaşmayı engeller
+      minZoom: 5,
       maxBounds: [
-        [35.0, 25.0], // Güneybatı sınırı
-        [43.0, 45.0]  // Kuzeydoğu sınırı
+        [35.0, 25.0],
+        [43.0, 45.0]
       ]
     });
 
-    // Harita görsellerini OpenStreetMap'ten çekiyoruz
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap katkıda bulunanlar'
     }).addTo(map);
 
-    // Rails'ten gelen Kayıp İlanları (@lost_pets) verisini JavaScript dizisine (JSON) çeviriyoruz
     var lostPets = <%= raw @lost_pets.to_json %>;
 
-    // Her bir ilan için haritaya kırmızı bir pin ekliyoruz
     lostPets.forEach(function(pet) {
-      if(pet.latitude && pet.longitude) {
-        // Pin oluştur
+      if (pet.latitude && pet.longitude) {
         var marker = L.marker([pet.latitude, pet.longitude]).addTo(map);
-        
-        // Pine tıklandığında açılacak baloncuk (Popup) tasarımı
         var popupContent = `
           <div style="text-align:center;">
-            <h3 style="margin:0 0 5px 0; color:#e74c3c;">Kayıp: ${pet.name || 'İsimsiz'}</h3>
-            <p style="margin:0; color:#7f8c8d;">${pet.breed || 'Tür/Irk belirtilmemiş'}</p>
-            <p style="margin:5px 0 0 0; font-size:0.9em;">📍 ${pet.description || ''}</p>
+            <strong>${pet.name || 'İsimsiz'}</strong><br />
+            <span style="color:#7f8c8d;">${pet.breed || 'Tür/Irk belirtilmemiş'}</span>
           </div>
         `;
         marker.bindPopup(popupContent);

@@ -57,6 +57,8 @@ end
 group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
+  # Email preview and testing in development
+  gem "letter_opener"
 end
 
 group :test do
@@ -67,6 +69,7 @@ end
 
 gem "geocoder", "~> 1.8"
 
+gem "devise"
 gem "pgvector", "~> 0.3.3"
 
 gem "neighbor", "~> 1.0"

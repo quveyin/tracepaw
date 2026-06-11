@@ -1,0 +1,287 @@
+<div class="pet-detail-page">
+  <div class="pet-header">
+    <div class="pet-photos">
+      <% if @pet.photos.attached? %>
+        <div class="photo-gallery">
+          <% @pet.photos.first(5).each do |photo| %>
+            <%= image_tag photo, alt: @pet.name, class: "pet-photo" %>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="no-photo">Fotoğraf bulunamadı</div>
+      <% end %>
+    </div>
+
+    <div class="pet-info-panel">
+      <h1><%= @pet.name %></h1>
+      <div class="pet-details">
+        <p><strong>Tür:</strong> <%= @pet.species %></p>
+        <p><strong>Cins:</strong> <%= @pet.breed %></p>
+        <p><strong>Yaş:</strong> <%= @pet.age %> yaş</p>
+        <p><strong>Konum:</strong> <%= [@pet.city, @pet.district, @pet.neighborhood].compact.reject(&:blank?).join(", ") %></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="matches-panel">
+    <h2>Olası Eşleşmeler / İhbarlar</h2>
+
+    <% if @similar_sightings.any? %>
+      <p class="matches-intro"><%= @similar_sightings.length %> adet benzer ihbar bulundu.</p>
+      <div class="matches-grid">
+        <% @similar_sightings.each do |sighting| %>
+          <div class="match-card">
+            <div class="match-photo">
+              <% if sighting.photo.attached? %>
+                <%= image_tag sighting.photo, alt: "Sighting", class: "sighting-image" %>
+              <% else %>
+                <div class="no-sighting-photo">Fotoğraf yok</div>
+              <% end %>
+            </div>
+
+            <div class="match-info">
+              <div class="similarity-badge">
+                <span class="score"><%= sighting.similarity_score %>%</span>
+                <span class="label">Benzerlik</span>
+              </div>
+
+              <p class="sighting-date">
+                <strong>Tarih:</strong> <%= sighting.seen_at&.strftime("%d %B %Y, %H:%M") || "Belirtilmemiş" %>
+              </p>
+
+              <p class="sighting-location">
+                <strong>Konum:</strong> <%= [sighting.city, sighting.district, sighting.neighborhood].compact.reject(&:blank?).join(", ") || "Belirtilmemiş" %>
+              </p>
+
+              <% if sighting.description.present? %>
+                <p class="sighting-description">
+                  <strong>Açıklama:</strong> <%= truncate(sighting.description, length: 100) %>
+                </p>
+              <% end %>
+
+              <div class="match-actions">
+                <%= link_to "Detayları Gör", sighting_path(sighting), class: "btn-detail" %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="no-matches">
+        <p>Henüz dostunuza benzer bir ihbar bulunamadı.</p>
+        <p class="subtext">Yeni ihbarlar geldiğinde burada görüntülenecektir.</p>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<style>
+  .pet-detail-page {
+    max-width: 1200px;
+    margin: 48px auto;
+    padding: 0 20px 80px;
+  }
+
+  .pet-header {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-bottom: 60px;
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 20px 60px rgba(23, 33, 70, 0.08);
+  }
+
+  .photo-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 16px;
+  }
+
+  .pet-photo {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .no-photo {
+    background: #f0f4f8;
+    border-radius: 12px;
+    padding: 60px 20px;
+    text-align: center;
+    color: #7f8c8d;
+  }
+
+  .pet-info-panel h1 {
+    margin: 0 0 24px 0;
+    color: #1f3254;
+    font-size: 2.2rem;
+  }
+
+  .pet-details p {
+    margin: 12px 0;
+    color: #4a5568;
+    line-height: 1.6;
+  }
+
+  .matches-panel {
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 20px 60px rgba(23, 33, 70, 0.08);
+  }
+
+  .matches-panel h2 {
+    margin-top: 0;
+    color: #1f3254;
+    margin-bottom: 24px;
+  }
+
+  .matches-intro {
+    color: #556e85;
+    margin-bottom: 24px;
+  }
+
+  .matches-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+  }
+
+  .match-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .match-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(23, 33, 70, 0.12);
+  }
+
+  .match-photo {
+    height: 200px;
+    overflow: hidden;
+    background: #f0f4f8;
+  }
+
+  .sighting-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .no-sighting-photo {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e8ecf1;
+    color: #7f8c8d;
+    font-size: 0.9rem;
+  }
+
+  .match-info {
+    padding: 20px;
+    position: relative;
+  }
+
+  .similarity-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, #ff5a5f 0%, #ff7a80 100%);
+    color: white;
+    border-radius: 50px;
+    padding: 10px 16px;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+
+  .similarity-badge .score {
+    display: block;
+    font-size: 1.4rem;
+    font-weight: 800;
+  }
+
+  .similarity-badge .label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .sighting-date,
+  .sighting-location,
+  .sighting-description {
+    margin: 10px 0;
+    color: #4a5568;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .sighting-description {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+  }
+
+  .match-actions {
+    margin-top: 16px;
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn-detail {
+    flex: 1;
+    display: inline-block;
+    background: #2b3a67;
+    color: white;
+    padding: 10px 16px;
+    border-radius: 8px;
+    text-align: center;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease;
+  }
+
+  .btn-detail:hover {
+    background-color: #1f253f;
+  }
+
+  .no-matches {
+    text-align: center;
+    padding: 60px 40px;
+    background: #f8fafc;
+    border-radius: 16px;
+    border: 1px dashed #d3dce6;
+  }
+
+  .no-matches p {
+    margin: 0;
+    color: #556e85;
+    font-size: 1.1rem;
+  }
+
+  .no-matches .subtext {
+    margin-top: 8px;
+    color: #7f8c8d;
+    font-size: 0.95rem;
+  }
+
+  @media (max-width: 768px) {
+    .pet-header {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+
+    .matches-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

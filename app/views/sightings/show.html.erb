@@ -1,0 +1,132 @@
+<div class="sighting-detail-page">
+  <div class="sighting-header">
+    <h1>İhbar Detayı</h1>
+
+    <div class="sighting-content">
+      <% if @sighting.photo.attached? %>
+        <div class="sighting-photo-panel">
+          <%= image_tag @sighting.photo, alt: "Sighting photo", class: "sighting-full-photo" %>
+        </div>
+      <% else %>
+        <div class="no-photo-panel">Fotoğraf bulunamadı</div>
+      <% end %>
+
+      <div class="sighting-details">
+        <p>
+          <strong>Tarih/Saat:</strong> <%= @sighting.seen_at&.strftime("%d %B %Y, %H:%M") || "Belirtilmemiş" %>
+        </p>
+
+        <p>
+          <strong>Konum:</strong> <%= [@sighting.city, @sighting.district, @sighting.neighborhood].compact.reject(&:blank?).join(", ") || "Belirtilmemiş" %>
+        </p>
+
+        <% if @sighting.latitude.present? && @sighting.longitude.present? %>
+          <p>
+            <strong>Koordinatlar:</strong> <%= "#{@sighting.latitude}, #{@sighting.longitude}" %>
+          </p>
+        <% end %>
+
+        <% if @sighting.description.present? %>
+          <p>
+            <strong>Açıklama:</strong> <%= @sighting.description %>
+          </p>
+        <% end %>
+
+        <%= link_to "Geri Dön", root_path, class: "btn-back" %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .sighting-detail-page {
+    max-width: 1000px;
+    margin: 48px auto;
+    padding: 0 20px 80px;
+  }
+
+  .sighting-header {
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 20px 60px rgba(23, 33, 70, 0.08);
+  }
+
+  .sighting-header h1 {
+    margin-top: 0;
+    color: #1f3254;
+  }
+
+  .sighting-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    margin-top: 24px;
+  }
+
+  .sighting-photo-panel {
+    border-radius: 16px;
+    overflow: hidden;
+    background: #f0f4f8;
+  }
+
+  .sighting-full-photo {
+    width: 100%;
+    height: auto;
+    display: block;
+    max-height: 500px;
+    object-fit: cover;
+  }
+
+  .no-photo-panel {
+    background: #e8ecf1;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    color: #7f8c8d;
+    font-size: 1rem;
+  }
+
+  .sighting-details {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+
+  .sighting-details p {
+    margin: 16px 0;
+    color: #4a5568;
+    line-height: 1.6;
+    word-break: break-word;
+  }
+
+  .sighting-details strong {
+    color: #1f3254;
+  }
+
+  .btn-back {
+    display: inline-block;
+    background: #2b3a67;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background-color 0.2s ease;
+    margin-top: 24px;
+    width: fit-content;
+  }
+
+  .btn-back:hover {
+    background-color: #1f253f;
+  }
+
+  @media (max-width: 768px) {
+    .sighting-content {
+      grid-template-columns: 1fr;
+      gap: 24px;
+    }
+  }
+</style>

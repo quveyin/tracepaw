@@ -21,9 +21,88 @@
     <%# Includes all stylesheet files in app/assets/stylesheets %>
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
+
+    <style>
+      .app-navbar {
+        background: rgba(255, 255, 255, 0.95);
+        border-bottom: 1px solid #e8edf3;
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        backdrop-filter: blur(12px);
+      }
+
+      .nav-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 16px 24px;
+      }
+
+      .brand {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: #1f3254;
+        text-decoration: none;
+      }
+
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+
+      .nav-link {
+        color: #4a5568;
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      .nav-link:hover {
+        color: #1f3254;
+      }
+
+      .nav-button {
+        background: #ff5a5f;
+        color: white;
+        border-radius: 999px;
+        padding: 10px 20px;
+        text-decoration: none;
+        font-weight: 700;
+      }
+
+      .nav-user {
+        color: #2d3748;
+        font-weight: 600;
+      }
+    </style>
   </head>
 
   <body>
-    <%= yield %>
+    <header class="app-navbar">
+      <div class="container nav-inner">
+        <%= link_to "TracePaw", root_path, class: "brand" %>
+
+        <nav class="nav-links">
+          <% if user_signed_in? %>
+            <span class="nav-user">Merhaba, <%= current_user.first_name.presence || current_user.email %></span>
+            <%= link_to "İlanlarım", pets_path, class: "nav-link" %>
+            <%= link_to "Yeni İlan", new_pet_path, class: "nav-button" %>
+            <%= link_to "Çıkış Yap", destroy_user_session_path, method: :delete, data: { turbo_method: :delete }, class: "nav-link" %>
+          <% else %>
+            <%= link_to "Giriş Yap", new_user_session_path, class: "nav-link" %>
+            <%= link_to "Kayıt Ol", new_user_registration_path, class: "nav-button" %>
+          <% end %>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <%= yield %>
+    </main>
   </body>
 </html>

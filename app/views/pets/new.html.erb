@@ -1,0 +1,146 @@
+<section class="pet-form-page">
+  <div class="form-panel">
+    <h1>Yeni Kayıp İlanı Oluştur</h1>
+    <p class="subtitle">Kayıp dostunuz için kaybı hızlıca kayıt altına alın ve takip edin.</p>
+
+    <%= form_with(model: @pet, local: true, html: { multipart: true, class: "pet-form" }) do |form| %>
+      <% if @pet.errors.any? %>
+        <div class="errors">
+          <h2><%= pluralize(@pet.errors.count, "hata") %> bulundu:</h2>
+          <ul>
+            <% @pet.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div class="field-group">
+        <%= form.label :name, "İsim" %>
+        <%= form.text_field :name, required: true %>
+      </div>
+
+      <div class="field-group horizontal">
+        <div>
+          <%= form.label :age, "Yaş" %>
+          <%= form.number_field :age, min: 0 %>
+        </div>
+        <div>
+          <%= form.label :breed, "Cins" %>
+          <%= form.text_field :breed %>
+        </div>
+      </div>
+
+      <div class="field-group horizontal">
+        <div>
+          <%= form.label :species, "Tür" %>
+          <%= form.text_field :species %>
+        </div>
+        <div>
+          <%= form.label :city, "İl" %>
+          <%= form.text_field :city %>
+        </div>
+      </div>
+
+      <div class="field-group horizontal">
+        <div>
+          <%= form.label :district, "İlçe" %>
+          <%= form.text_field :district %>
+        </div>
+        <div>
+          <%= form.label :neighborhood, "Mahalle" %>
+          <%= form.text_field :neighborhood %>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <%= form.label :photos, "Fotoğraflar" %>
+        <%= form.file_field :photos, multiple: true, accept: "image/*" %>
+        <p class="help-text">En az bir fotoğraf yükleyin.</p>
+      </div>
+
+      <div class="actions">
+        <%= form.submit "İlanı Oluştur", class: "submit-button" %>
+      </div>
+    <% end %>
+  </div>
+</section>
+
+<style>
+  .pet-form-page {
+    max-width: 900px;
+    margin: 48px auto 80px;
+    padding: 0 20px;
+  }
+
+  .form-panel {
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 20px 60px rgba(23, 33, 70, 0.08);
+  }
+
+  .form-panel h1 {
+    margin-top: 0;
+    color: #1f3254;
+  }
+
+  .subtitle {
+    color: #5f6f87;
+    margin-bottom: 32px;
+  }
+
+  .field-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .field-group.horizontal {
+    gap: 16px;
+    flex-direction: row;
+  }
+
+  .field-group label {
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .field-group input {
+    width: 100%;
+    border-radius: 14px;
+    border: 1px solid #d3dce6;
+    padding: 14px 16px;
+    font-size: 1rem;
+  }
+
+  .help-text {
+    margin: 10px 0 0;
+    color: #63738d;
+    font-size: 0.95rem;
+  }
+
+  .actions {
+    margin-top: 32px;
+    text-align: right;
+  }
+
+  .submit-button {
+    background-color: #ff5a5f;
+    color: white;
+    border: none;
+    border-radius: 999px;
+    padding: 16px 28px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .errors {
+    border: 1px solid #f3c1c1;
+    background: #fff1f1;
+    color: #8f1e1e;
+    border-radius: 16px;
+    padding: 18px 22px;
+    margin-bottom: 24px;
+  }
+</style>

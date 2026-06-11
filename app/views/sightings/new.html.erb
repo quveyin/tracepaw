@@ -1,0 +1,151 @@
+<section class="sighting-form-page">
+  <div class="form-panel">
+    <h1>Sokakta Gördüm - İhbar Bırak</h1>
+    <p class="subtitle">Kayıp veya tasmalı bir hayvan mı gördün? Fotoğrafını yükleyerek bize haber ver!</p>
+
+    <%= form_with(model: @sighting, local: true, html: { multipart: true, class: "sighting-form" }) do |form| %>
+      <% if @sighting.errors.any? %>
+        <div class="errors">
+          <h2><%= pluralize(@sighting.errors.count, "hata") %> bulundu:</h2>
+          <ul>
+            <% @sighting.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div class="field-group">
+        <%= form.label :photo, "Fotoğraf (Zorunlu)" %>
+        <%= form.file_field :photo, accept: "image/*", required: true %>
+        <p class="help-text">Net bir yüz fotoğrafı yükleyin. Sistem biyometrik analiz yapacak.</p>
+      </div>
+
+      <div class="field-group horizontal">
+        <div>
+          <%= form.label :city, "İl" %>
+          <%= form.text_field :city %>
+        </div>
+        <div>
+          <%= form.label :district, "İlçe" %>
+          <%= form.text_field :district %>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <%= form.label :neighborhood, "Mahalle / Cadde" %>
+        <%= form.text_field :neighborhood %>
+      </div>
+
+      <div class="field-group">
+        <%= form.label :description, "Açıklama (İsteğe Bağlı)" %>
+        <%= form.text_area :description, rows: 4, placeholder: "Hayvan türü, rengi, davranışı vb. hakkında bilgi verin..." %>
+      </div>
+
+      <div class="field-group horizontal">
+        <div>
+          <%= form.label :latitude, "Enlem (İsteğe Bağlı)" %>
+          <%= form.number_field :latitude, step: 0.0001 %>
+        </div>
+        <div>
+          <%= form.label :longitude, "Boylam (İsteğe Bağlı)" %>
+          <%= form.number_field :longitude, step: 0.0001 %>
+        </div>
+      </div>
+
+      <div class="actions">
+        <%= form.submit "İhbarı Gönder", class: "submit-button" %>
+      </div>
+    <% end %>
+  </div>
+</section>
+
+<style>
+  .sighting-form-page {
+    max-width: 900px;
+    margin: 48px auto 80px;
+    padding: 0 20px;
+  }
+
+  .form-panel {
+    background: white;
+    border-radius: 24px;
+    padding: 40px;
+    box-shadow: 0 20px 60px rgba(23, 33, 70, 0.08);
+  }
+
+  .form-panel h1 {
+    margin-top: 0;
+    color: #1f3254;
+  }
+
+  .subtitle {
+    color: #5f6f87;
+    margin-bottom: 32px;
+  }
+
+  .field-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .field-group.horizontal {
+    gap: 16px;
+    flex-direction: row;
+  }
+
+  .field-group label {
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .field-group input,
+  .field-group textarea {
+    width: 100%;
+    border-radius: 14px;
+    border: 1px solid #d3dce6;
+    padding: 14px 16px;
+    font-size: 1rem;
+    font-family: inherit;
+  }
+
+  .field-group textarea {
+    resize: vertical;
+  }
+
+  .help-text {
+    margin: 10px 0 0;
+    color: #63738d;
+    font-size: 0.95rem;
+  }
+
+  .actions {
+    margin-top: 32px;
+    text-align: right;
+  }
+
+  .submit-button {
+    background-color: #ff5a5f;
+    color: white;
+    border: none;
+    border-radius: 999px;
+    padding: 16px 28px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+
+  .submit-button:hover {
+    background-color: #e04f54;
+  }
+
+  .errors {
+    border: 1px solid #f3c1c1;
+    background: #fff1f1;
+    color: #8f1e1e;
+    border-radius: 16px;
+    padding: 18px 22px;
+    margin-bottom: 24px;
+  }
+</style>
